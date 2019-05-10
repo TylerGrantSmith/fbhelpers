@@ -1,0 +1,59 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+# fbhelpers
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+A simple package of random helper functions.
+
+## Installation
+
+You can install the released version of fbhelpers from [CRAN](https://CRAN.R-project.org) with:
+
+``` r
+# Install development version from GitHub
+devtools::install_github("TylerGrantSmith/fbhelpers")
+```
+
+## Example
+
+
+```{r example, message=FALSE}
+library(fbhelpers)
+library(dplyr)
+library(ggplot2)
+
+tibble(x = runif(1000),
+       e = rnorm(1000, sd = 0.5),
+       y = 1 + x + e) %>% 
+  mutate(x_cut = cut(x, seq(0,1,.05))) %>% 
+  group_by(x_cut) %>% 
+  summarise(n = n(), mean = mean(y)) %>%
+  assign("dff",.,envir = .GlobalEnv) %>%   # used to get scaling factors for the secondary axis.
+  ggplot() +
+  aes(x = x_cut) + 
+  geom_col(aes(y = n * max(mean) / max(n)), fill = "yellow", color = "black") +
+  geom_line(aes(y = mean), group = 1, size = 1) + 
+  geom_point(aes(y = mean)) +
+  scale_y_continuous(
+    expand = c(0,0,0.1,0),
+    sec.axis = sec_axis(trans = ~ . * max(dff$n) / max(dff$mean), )) +
+  theme_emblem() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  xlab("x") + 
+  ylab("response") +
+  ggtitle("random plot")
+```
